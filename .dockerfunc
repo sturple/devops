@@ -1,0 +1,100 @@
+composer() {
+  docker run \
+  --rm \
+  -u $(id -u):$(id -g) \
+  -v $(pwd):/app \
+  composer/composer \
+  $@
+}
+yarn() {
+  docker run \
+  --rm \
+  -u "node" \
+  -w "/home/node/app" \
+  -v "$(pwd):/home/node/app" \
+  node yarn \
+  $@
+}
+node() {
+  docker run \
+  --rm \
+  -u "node" \
+  -w "/home/node/app" \
+  -v "$(pwd):/home/node/app" \
+  node node \
+  $@
+}
+
+npm() {
+  docker run \
+  --rm \
+  -u "node" \
+  -w "/home/node/app" \
+  -v "$(pwd):/home/node/app" \
+  node npm \
+  $@
+}
+
+gimp() {
+  docker run  \
+  -v /etc/localtime:/ect/localtime:ro \
+  -v /tmp/.X11-unix:/tmp/.X11-unix \
+  -e DISPLAY=unix$DISPLAY \
+  -v "${HOME}/Pictures:/root/Pictures" \
+  -v "${HOME}/.gtkrc:/root/.gtkrc" \
+  -e GDK_SCALE \
+  -e GDK_DPI_SCALE \
+  --name gimp \
+  sturple/gimp \
+  $@
+}
+wp_test() {
+  local sitename="${1:-worpress_multisite}"
+  echo $sitename
+}
+
+
+wordpress_multisite() {
+  # setup wordpress multisite
+  #mysql
+  #phpadmin
+  local sitename="${1:-wordpress_multisite}"
+  echo "Creating docker contaner: ${sitename}"
+  docker run \
+  --name ${sitename} \
+  -v ${HOME}/Development/wordpress/${sitename}/wp-content:/var/www/html/wp-content \
+  -e WORDPRESS_DB_HOST="mysql57:3306" \
+  -e WORDPRESS_DB_PASSWORD="r@nD0m7772" \
+  -e WORDPRESS_MULTISITE="true" \
+  -e WORDPRESS_DB_NAME="${sitename}" \
+  -e WORDPRESS_DEBUG="true" \
+  -e WP_GROUP=$(id -g) \
+  --link mysql57:mysql \
+  -u $(id -u):$(id -g)
+  -p 80:80 \
+  -p 443:443 \
+  -d \
+  sturple/wordpress
+}
+
+mysql() {
+  docker run \
+  --name mysql57 \
+  -v ${HOME}/appdata/.mysql:/var/lib/mysql \
+  -e MYSQL_ROOT_PASSWORD="r@nD0m7772" \
+  -d \
+  mysql:5.7 \
+  $@
+}
+
+phpmyadmin() {
+  docker run \
+  --name phpmyadmin \
+  -e MYSQL_ROOT_PASSWORD="r@nD0m7772" \
+  -e PMA_HOST="mysql57" \
+  --link mysql57:mysql \
+  -p 8080:80 \
+  -d \
+  phpmyadmin/phpmyadmin \
+  $@
+}
