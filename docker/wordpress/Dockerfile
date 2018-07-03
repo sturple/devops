@@ -43,6 +43,7 @@ RUN set -ex; \
 
 # This is where the magic happens
 COPY docker-entrypoint.sh /usr/local/bin/
+#COPY dev.local.conf /etc/apache2/sites-available/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 ENTRYPOINT ["docker-entrypoint.sh"]

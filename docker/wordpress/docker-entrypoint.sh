@@ -218,10 +218,11 @@ $mysql->close();
 EOPHP
 fi
 wp-cli config set WP_DEBUG_LOG true --add --allow-root --type=constant
+#wp-cli rewrite structure '/%post_name%/' --allow-root
 if [ "$WORDPRESS_MULTISITE" = "true" ]; then
- 	wp-cli core multisite-install --url=localhost --title="BCGov Dev Multi" --admin_user=admin --admin_password="password" --admin_email="admin@example.com" --allow-root
+ 	wp-cli core multisite-install --url="${WORDPRESS_DOMAIN}" --title="BCGov Dev Multi" --admin_user=admin --admin_password="password" --admin_email="admin@example.com" --allow-root
 else
-	wp-cli core install --url=localhost --title="BCGov Dev Single" --admin_user=admin --admin_password="password" --admin_email="admin@example.com" --allow-root
+	wp-cli core install --url="${WORDPRESS_DOMAIN}" --title="BCGov Dev Single" --admin_user=admin --admin_password="password" --admin_email="admin@example.com" --allow-root
 fi
 
 exec "$@"

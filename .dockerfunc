@@ -35,20 +35,7 @@ npm() {
   $@
 }
 
-gimp() {
-  docker run  \
-  -v /etc/localtime:/ect/localtime:ro \
-  -v /tmp/.X11-unix:/tmp/.X11-unix \
-  -e DISPLAY=unix$DISPLAY \
-  -v "${HOME}/Pictures:/root/Pictures" \
-  -v "${HOME}/.gtkrc:/root/.gtkrc" \
-  -e GDK_SCALE \
-  -e GDK_DPI_SCALE \
-  --name gimp \
-  sturple/gimp \
-  $@
-}
-wp_test() {
+swp_test() {
   local sitename="${1:-worpress_multisite}"
   echo $sitename
 }
@@ -62,17 +49,18 @@ wordpress_multisite() {
   echo "Creating docker contaner: ${sitename}"
   docker run \
   --name ${sitename} \
-  -v ${HOME}/Development/wordpress/${sitename}/wp-content:/var/www/html/wp-content \
+  -v ${HOME}/Docker/wordpress/${sitename}/wp-content:/var/www/html/wp-content \
   -e WORDPRESS_DB_HOST="mysql57:3306" \
   -e WORDPRESS_DB_PASSWORD="r@nD0m7772" \
   -e WORDPRESS_MULTISITE="true" \
   -e WORDPRESS_DB_NAME="${sitename}" \
   -e WORDPRESS_DEBUG="true" \
+  -e WORDPRESS_DOMAIN="wp.gov.com" \
   -e WP_GROUP=$(id -g) \
+  -e VIRTUAL_HOST="wp.gov.com" \
   --link mysql57:mysql \
-  -u $(id -u):$(id -g)
-  -p 80:80 \
-  -p 443:443 \
+  --restart=unless-stopped \
+  -u :$(id -g) \
   -d \
   sturple/wordpress
 }
@@ -82,6 +70,7 @@ mysql() {
   --name mysql57 \
   -v ${HOME}/appdata/.mysql:/var/lib/mysql \
   -e MYSQL_ROOT_PASSWORD="r@nD0m7772" \
+  --restart always \
   -d \
   mysql:5.7 \
   $@
@@ -92,9 +81,42 @@ phpmyadmin() {
   --name phpmyadmin \
   -e MYSQL_ROOT_PASSWORD="r@nD0m7772" \
   -e PMA_HOST="mysql57" \
+  -e VIRTUAL_HOST="phpmyadmin.gov.com" \
   --link mysql57:mysql \
+  --add-host="phpmyadmin.gov.com:172.17.0.4" \
   -p 8080:80 \
+  --restart always \
   -d \
   phpmyadmin/phpmyadmin \
   $@
+}
+
+rev_proxy() {
+  docker run \
+  --name rev_proxy \
+  -d \
+  -p 80:80 \
+  -v /var/run/docker.sock:/tmp/docker.sock:ro  \
+  -e DEFAULT_HOST=gov.com \
+  jwilder/nginx-proxy \
+  $@
+}
+
+update_hosts() {
+  #usage update_hosts /etc/hosts
+  local processFile="${1-/etc/hosts}"
+  local tmpfile=${processFile}.tmp
+  for service in $(docker ps -q) ; do
+    local domain="";
+    for vh in $(docker inspect --format '{{ .Config.Env }}' ${service} | egrep -oh 'VIRTUAL_HOST=(\w|\.)+' | tr "=" "\n") ; do
+      if [ $vh != 'VIRTUAL_HOST' ]; then
+        domain="${vh}"
+      fi
+    done
+    if [ -n "${domain}" ]; then
+      local ipaddress=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' ${service})
+      grep -v $domain $processfile > $tmpfile
+      echo -e "${ipaddress} \t ${domain}" >> $tmpfile
+    fi
+  done
 }
