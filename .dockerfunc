@@ -6,7 +6,7 @@ composer() {
   composer/composer \
   $@
 }
-yarn() {
+_yarn() {
   docker run \
   --rm \
   -u "node" \
@@ -15,7 +15,7 @@ yarn() {
   node yarn \
   $@
 }
-node() {
+_node() {
   docker run \
   --rm \
   -u "node" \
@@ -25,7 +25,7 @@ node() {
   $@
 }
 
-npm() {
+_npm() {
   docker run \
   --rm \
   -u "node" \
@@ -84,7 +84,6 @@ phpmyadmin() {
   -e VIRTUAL_HOST="phpmyadmin.gov.com" \
   --link mysql57:mysql \
   --add-host="phpmyadmin.gov.com:172.17.0.4" \
-  -p 8080:80 \
   --restart always \
   -d \
   phpmyadmin/phpmyadmin \
@@ -98,25 +97,8 @@ rev_proxy() {
   -p 80:80 \
   -v /var/run/docker.sock:/tmp/docker.sock:ro  \
   -e DEFAULT_HOST=gov.com \
+  -restart always \
   jwilder/nginx-proxy \
   $@
 }
 
-update_hosts() {
-  #usage update_hosts /etc/hosts
-  local processFile="${1-/etc/hosts}"
-  local tmpfile=${processFile}.tmp
-  for service in $(docker ps -q) ; do
-    local domain="";
-    for vh in $(docker inspect --format '{{ .Config.Env }}' ${service} | egrep -oh 'VIRTUAL_HOST=(\w|\.)+' | tr "=" "\n") ; do
-      if [ $vh != 'VIRTUAL_HOST' ]; then
-        domain="${vh}"
-      fi
-    done
-    if [ -n "${domain}" ]; then
-      local ipaddress=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' ${service})
-      grep -v $domain $processfile > $tmpfile
-      echo -e "${ipaddress} \t ${domain}" >> $tmpfile
-    fi
-  done
-}

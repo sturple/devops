@@ -14,6 +14,7 @@ for service in $(docker ps -q) ; do
     ipaddress=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' ${service})
     grep -v $domain $processfile > $tmpfile
     echo $ipaddress '\t' $domain >> $tmpfile
+    echo '127.0.0.1 \t' $domain >> $tmpfile
     mv $tmpfile $processfile
   fi
 done
