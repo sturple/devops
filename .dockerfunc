@@ -1,4 +1,4 @@
-composer() {
+_composer() {
   docker run \
   --rm \
   -u $(id -u):$(id -g) \
@@ -49,15 +49,14 @@ wordpress_multisite() {
   echo "Creating docker contaner: ${sitename}"
   docker run \
   --name ${sitename} \
-  -v ${HOME}/Docker/wordpress/${sitename}/wp-content:/var/www/html/wp-content \
+  -v ${HOME}/Development/wordpress/${sitename}/wp-content:/var/www/html/wp-content \
   -e WORDPRESS_DB_HOST="mysql57:3306" \
   -e WORDPRESS_DB_PASSWORD="r@nD0m7772" \
   -e WORDPRESS_MULTISITE="true" \
   -e WORDPRESS_DB_NAME="${sitename}" \
   -e WORDPRESS_DEBUG="true" \
-  -e WORDPRESS_DOMAIN="wp.gov.com" \
   -e WP_GROUP=$(id -g) \
-  -e VIRTUAL_HOST="wp.gov.com" \
+  -e VIRTUAL_HOST="wordpress.test" \
   --link mysql57:mysql \
   --restart=unless-stopped \
   -u :$(id -g) \
@@ -81,9 +80,8 @@ phpmyadmin() {
   --name phpmyadmin \
   -e MYSQL_ROOT_PASSWORD="r@nD0m7772" \
   -e PMA_HOST="mysql57" \
-  -e VIRTUAL_HOST="phpmyadmin.gov.com" \
+  -e VIRTUAL_HOST="phpmyadmin.test \
   --link mysql57:mysql \
-  --add-host="phpmyadmin.gov.com:172.17.0.4" \
   --restart always \
   -d \
   phpmyadmin/phpmyadmin \
@@ -91,12 +89,13 @@ phpmyadmin() {
 }
 
 rev_proxy() {
+  local port = ${1:-80}
   docker run \
   --name rev_proxy \
   -d \
-  -p 80:80 \
+  -p $port:80 \
   -v /var/run/docker.sock:/tmp/docker.sock:ro  \
-  -e DEFAULT_HOST=gov.com \
+  -e DEFAULT_HOST=local.test \
   -restart always \
   jwilder/nginx-proxy \
   $@
