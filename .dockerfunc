@@ -36,10 +36,6 @@ _npm() {
   $@
 }
 
-swp_test() {
-  local sitename="${1:-worpress_multisite}"
-  echo $sitename
-}
 
 wordpress() {
   local sitename="${1:-wordpress}"
@@ -58,7 +54,8 @@ wordpress() {
   -u :$(id -g) \
   -d \
   sturple/wordpress
-  echo "Visit http://${sitename}.test to view this site.  Dabtabase: mysql57:${sitename}"
+  echo "Visit http://${sitename}.test to view this site."
+  echo "Dabtabase: mysql57:${sitename}"
   echo "***** Run dockerUpdateHost.sh to update host file"
 }
 
@@ -83,22 +80,49 @@ wordpress_multisite() {
   -u :$(id -g) \
   -d \
   sturple/wordpress
-  echo "Visit http://${sitename}.test to view this site.  Dabtabase: mysql57:${sitename}"
+  echo "Visit http://${sitename}.test to view this site."
+  echo "Dabtabase: mysql57:${sitename}"
   echo "***** Run dockerUpdateHost.sh to update host file"
 }
 
 mysql() {
-  docker run \
-  --name mysql57 \
-  -v ${HOME}/appdata/.mysql:/var/lib/mysql \
-  -e MYSQL_ROOT_PASSWORD="r@nD0m7772" \
-  --restart always \
-  -d \
-  mysql:5.7 \
-  $@
+  docker exec \
+  -it \
+  mysql57 \
+  mysql -p
+
+}
+mysql_stop() {
+  local is_running=$(docker ps --filter "status=running" --filter "name=mysql57" -q)
+  if [ ! -z "$is_running" ]; then
+    docker stop "$is_running"
+    echo -e "\033[97mStopped mysql57\033[32m"
+  fi
+}
+mysql_start() {
+  local is_running=$(docker ps --filter "status=running" --filter "name=mysql57" -q)
+  if [ -z "$is_running" ]; then
+    local is_exited=$(docker ps --filter "status=exited" --filter "name=mysql57" -q)
+    if [ -z "$is_exited" ]; then
+      docker run \
+      --name mysql57 \
+      -v ${HOME}/appdata/.mysql:/var/lib/mysql \
+      -e MYSQL_ROOT_PASSWORD="r@nD0m7772" \
+      --restart always \
+      -d \
+      mysql:5.7
+      echo -e "\033[97mStarted mysql57\033[32m"
+    else
+        docker restart mysql57
+        echo -e "\033[97mRestarted mysql57\033[32m"
+    fi
+  else
+    echo -e "\033[97mAlready running mysql57\033[32m"
+  fi
+
 }
 
-phpmyadmin() {
+phpmyadmin_start() {
   docker run \
   --name phpmyadmin \
   -e MYSQL_ROOT_PASSWORD="r@nD0m7772" \
@@ -108,11 +132,10 @@ phpmyadmin() {
   --restart always \
   -d \
   phpmyadmin/phpmyadmin \
-  $@
   echo "Visit http://phpmyadmin.test to view this site."
 }
 
-rev_proxy() {
+revproxy_start() {
   local port = ${1:-80}
   docker run \
   --name rev_proxy \
@@ -122,5 +145,5 @@ rev_proxy() {
   -e DEFAULT_HOST=local.test \
   -restart always \
   jwilder/nginx-proxy \
-  $@
+  echo "Starting Reverse proxy, makes sure to run the dockerUpdateHost.sh, after all services are running"
 }
