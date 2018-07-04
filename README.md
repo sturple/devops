@@ -14,15 +14,17 @@ fi
 
 ## Commands
 ### Reverse proxy
-* Start reverse proxy ```rev_porxy```
+* Start reverse proxy ```revporxy_start```
 ### Mysql
 * Start /restart mysql ```mysql_start``` user ``root`` password ``r@nD0m7772``
 * Stop mysql ```mysql_stop```
 * start mysql command line server ``mysql``
 
 ### Phpmyadmin
-* starts phpmyadmin ``phpmyadmin``
+* starts phpmyadmin ``phpmyadmin_start``
+** url [http://phpmyadmin.test](http://phpmyadmin.test)
 
 ### Wordpress
 * starts/creates wordpress multi site ```wordpress_multisite [sitename]```
 * starts/creates wordpress site ```wordpress [sitename]```
+* url [http://{sitename}.test](http://{sitename}.test)

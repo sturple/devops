@@ -56,7 +56,7 @@ wordpress() {
   sturple/wordpress
   echo "Visit http://${sitename}.test to view this site."
   echo "Dabtabase: mysql57:${sitename}"
-  echo "***** Run dockerUpdateHost.sh to update host file"
+  echo "\033[93m***** Run dockerUpdateHost.sh to update host file\033[32m"
 }
 
 wordpress_multisite() {
@@ -82,7 +82,7 @@ wordpress_multisite() {
   sturple/wordpress
   echo "Visit http://${sitename}.test to view this site."
   echo "Dabtabase: mysql57:${sitename}"
-  echo "***** Run dockerUpdateHost.sh to update host file"
+  echo "\033[93m***** Run dockerUpdateHost.sh to update host file\033[32m"
 }
 
 mysql() {
@@ -131,19 +131,19 @@ phpmyadmin_start() {
   --link mysql57:mysql \
   --restart always \
   -d \
-  phpmyadmin/phpmyadmin \
+  phpmyadmin/phpmyadmin
   echo "Visit http://phpmyadmin.test to view this site."
 }
 
 revproxy_start() {
-  local port = ${1:-80}
+  local port=${1:-80}
   docker run \
-  --name rev_proxy \
+  --name revproxy \
   -d \
-  -p $port:80 \
+  -p "$port":80 \
   -v /var/run/docker.sock:/tmp/docker.sock:ro  \
   -e DEFAULT_HOST=local.test \
-  -restart always \
-  jwilder/nginx-proxy \
-  echo "Starting Reverse proxy, makes sure to run the dockerUpdateHost.sh, after all services are running"
+  --restart always \
+  jwilder/nginx-proxy
+  echo -e "\033[93mStarting Reverse proxy, makes sure to run the dockerUpdateHost.sh, after all services are running\033[32m"
 }
