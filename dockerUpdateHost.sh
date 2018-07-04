@@ -18,3 +18,5 @@ for service in $(docker ps -q) ; do
     mv $tmpfile $processfile
   fi
 done
+
+cat $processfile

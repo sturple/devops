@@ -1,8 +1,9 @@
-_composer() {
+composer() {
   docker run \
   --rm \
   -u $(id -u):$(id -g) \
   -v $(pwd):/app \
+  -v ${HOME}/appdata/.composer:/${COMPOSER_HOME}/cache \
   composer/composer \
   $@
 }
@@ -40,6 +41,26 @@ swp_test() {
   echo $sitename
 }
 
+wordpress() {
+  local sitename="${1:-wordpress}"
+  echo "Creating docker contaner: ${sitename}"
+  docker run \
+  --name ${sitename} \
+  -v ${HOME}/Development/wordpress/${sitename}/wp-content:/var/www/html/wp-content \
+  -e WORDPRESS_DB_HOST="mysql57:3306" \
+  -e WORDPRESS_DB_PASSWORD="r@nD0m7772" \
+  -e WORDPRESS_DB_NAME="${sitename}" \
+  -e WORDPRESS_DEBUG="true" \
+  -e WP_GROUP=$(id -g) \
+  -e VIRTUAL_HOST="${sitename:-wp}.test" \
+  --link mysql57:mysql \
+  --restart=unless-stopped \
+  -u :$(id -g) \
+  -d \
+  sturple/wordpress
+  echo "Visit http://${sitename}.test to view this site.  Dabtabase: mysql57:${sitename}"
+  echo "***** Run dockerUpdateHost.sh to update host file"
+}
 
 wordpress_multisite() {
   # setup wordpress multisite
@@ -56,12 +77,14 @@ wordpress_multisite() {
   -e WORDPRESS_DB_NAME="${sitename}" \
   -e WORDPRESS_DEBUG="true" \
   -e WP_GROUP=$(id -g) \
-  -e VIRTUAL_HOST="wordpress.test" \
+  -e VIRTUAL_HOST="${sitename:-wordpress}.test" \
   --link mysql57:mysql \
   --restart=unless-stopped \
   -u :$(id -g) \
   -d \
   sturple/wordpress
+  echo "Visit http://${sitename}.test to view this site.  Dabtabase: mysql57:${sitename}"
+  echo "***** Run dockerUpdateHost.sh to update host file"
 }
 
 mysql() {
@@ -80,12 +103,13 @@ phpmyadmin() {
   --name phpmyadmin \
   -e MYSQL_ROOT_PASSWORD="r@nD0m7772" \
   -e PMA_HOST="mysql57" \
-  -e VIRTUAL_HOST="phpmyadmin.test \
+  -e VIRTUAL_HOST="phpmyadmin.test" \
   --link mysql57:mysql \
   --restart always \
   -d \
   phpmyadmin/phpmyadmin \
   $@
+  echo "Visit http://phpmyadmin.test to view this site."
 }
 
 rev_proxy() {
@@ -100,4 +124,3 @@ rev_proxy() {
   jwilder/nginx-proxy \
   $@
 }
-
