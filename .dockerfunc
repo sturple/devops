@@ -1,4 +1,4 @@
-composer() {
+_composer() {
   docker run \
   --rm \
   -u $(id -u):$(id -g) \
@@ -42,7 +42,7 @@ wordpress() {
   echo "Creating docker contaner: ${sitename}"
   docker run \
   --name ${sitename} \
-  -v ${HOME}/Development/wordpress/${sitename}/wp-content:/var/www/html/wp-content \
+  -v ${HOME}/Development/wordpress-docker/${sitename}/wp-content:/var/www/html/wp-content \
   -e WORDPRESS_DB_HOST="mysql57:3306" \
   -e WORDPRESS_DB_PASSWORD="r@nD0m7772" \
   -e WORDPRESS_DB_NAME="${sitename}" \
@@ -67,7 +67,7 @@ wordpress_multisite() {
   echo "Creating docker contaner: ${sitename}"
   docker run \
   --name ${sitename} \
-  -v ${HOME}/Development/wordpress/${sitename}/wp-content:/var/www/html/wp-content \
+  -v ${HOME}/Development/wordpress-docker/${sitename}/wp-content:/var/www/html/wp-content \
   -e WORDPRESS_DB_HOST="mysql57:3306" \
   -e WORDPRESS_DB_PASSWORD="r@nD0m7772" \
   -e WORDPRESS_MULTISITE="true" \

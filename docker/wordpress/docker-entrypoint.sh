@@ -224,24 +224,26 @@ $mysql->close();
 EOPHP
 fi
 wp-cli config set WP_DEBUG_LOG true --add --allow-root --type=constant
-wp-cli config set MULTISITE true --add --allow-root --type=constant 
-wp-cli config set DOMAIN_CURRENT_SITE "${VIRTUAL_HOST:-localhost}" --add --allow-root --type=constant
-wp-cli config set PATH_CURRENT_SITE / --add --allow-root --type=constant
-wp-cli config set SITE_ID_CURRENT_SITE 1 --add --allow-root --type=constant
-wp-cli config set BLOG_ID_CURRENT_SITE 1 --add --allow-root --type=constant
 
-if  $(wp-cli core is-installed --allow-root); then
-	echo >&2 'Exiting entrypoint, Wordpress already installed'
+
+if [ "$WORDPRESS_MULTISITE" = "true" ]; then
+    if $(wp-cli core is-installed --allow-root); then
+        wp-cli config set MULTISITE true --add --allow-root --type=constant
+        wp-cli config set DOMAIN_CURRENT_SITE "${VIRTUAL_HOST:-localhost}" --add --allow-root --type=constant
+        wp-cli config set PATH_CURRENT_SITE / --add --allow-root --type=constant
+        wp-cli config set SITE_ID_CURRENT_SITE 1 --add --allow-root --type=constant
+        wp-cli config set BLOG_ID_CURRENT_SITE 1 --add --allow-root --type=constant
+        echo >&2 "Multisite already created, adding multi-site configurations"
+    else
+        wp-cli core multisite-install --url="${VIRTUAL_HOST:-localhost}" --title="BCGov Dev Multi" --admin_user=admin --admin_password="password" --admin_email="admin@example.com" --allow-root
+        echo >&2 "Creating Multisite ${VIRTUAL_HOST:-localhost}"
+    fi
 else
-
-	if [ "$WORDPRESS_MULTISITE" = "true" ]; then
-		wp-cli core multisite-install --url="${VIRTUAL_HOST:-localhost}" --title="BCGov Dev Multi" --admin_user=admin --admin_password="password" --admin_email="admin@example.com" --allow-root
-		echo >&2 "Creating Multisite ${VIRTUAL_HOST:-localhost}"
-	else
-		wp-cli core install --url="${VIRTUAL_HOST:-localhost}" --title="BCGov Dev Single" --admin_user=admin --admin_password="password" --admin_email="admin@example.com" --allow-root
-		echo >&2 "Creating Site ${VIRTUAL_HOST:-localhost}"
-	fi
-	wp-cli rewrite structure '/%post_name%/' --allow-root
+    if ! $(wp-cli core is-installed --allow-root); then
+        wp-cli core install --url="${VIRTUAL_HOST:-localhost}" --title="BCGov Dev Single" --admin_user=admin --admin_password="password" --admin_email="admin@example.com" --allow-root
+        echo >&2 "Creating Site ${VIRTUAL_HOST:-localhost}"
+    fi
 fi
+
 
 exec "$@"
