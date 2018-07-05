@@ -56,7 +56,7 @@ wordpress() {
   sturple/wordpress
   echo "Visit http://${sitename}.test to view this site."
   echo "Dabtabase: mysql57:${sitename}"
-  echo "\033[93m***** Run dockerUpdateHost.sh to update host file\033[32m"
+  echo -e "\033[93m***** Run dockerUpdateHost.sh to update host file\033[32m"
 }
 
 wordpress_multisite() {
@@ -82,7 +82,7 @@ wordpress_multisite() {
   sturple/wordpress
   echo "Visit http://${sitename}.test to view this site."
   echo "Dabtabase: mysql57:${sitename}"
-  echo "\033[93m***** Run dockerUpdateHost.sh to update host file\033[32m"
+  echo -e "\033[93m***** Run dockerUpdateHost.sh to update host file\033[32m"
 }
 
 mysql() {
