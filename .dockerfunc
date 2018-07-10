@@ -141,6 +141,7 @@ revproxy_start() {
   --name revproxy \
   -d \
   -p "$port":80 \
+  -p 443:443 \
   -v /var/run/docker.sock:/tmp/docker.sock:ro  \
   -e DEFAULT_HOST=local.test \
   --restart always \
