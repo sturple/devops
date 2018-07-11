@@ -1,4 +1,9 @@
 FROM python:3.5.5-slim-jessie
-WORKDIR '/app/'
+
+COPY server.py /app/
+RUN apt-get update; \
+    chmod +x /app/server.py ;
+
 EXPOSE 80/tcp
-CMD ["/usr/local/bin/python3.5", "-m", "http.server", "80"]
+
+CMD ["/usr/local/bin/python3.5", "/app/server.py"]

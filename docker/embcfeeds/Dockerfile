@@ -11,5 +11,5 @@ RUN apt-get update; \
 
 VOLUME ['/app/data/']
 WORKDIR /app/data/
-CMD cron && tail -f /var/log/cron.log
+CMD cron -f
 #CMD ["/usr/local/bin/python3.5", "-m", "http.server", "80"]
